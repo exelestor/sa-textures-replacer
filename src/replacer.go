@@ -5,6 +5,10 @@ import (
 	"os"
 	"flag"
 	"path/filepath"
+	_ "image/gif"
+	_ "image/jpeg"
+	"log"
+	"image/png"
 )
 
 var filePosition uint32
@@ -56,6 +60,22 @@ func main() {
 	onlyRead = flag.Bool("read", false, "a bool")
 	flag.Parse()
 	debug = *debugFlag
+
+	reader, err := os.Open("test.png")
+	if err != nil {
+	    log.Fatal(err)
+	}
+	defer reader.Close()
+
+	n, err := png.Decode(reader)
+	fmt.Printf("%+v\n", n)
+	fmt.Println(n.At(1, 1))
+
+	for i := 4; i <= 4096; i = i << 1 {
+		for j := 4; j <= 4096; j = j << 1 {
+			fmt.Printf("%dx%d\n", i, j)
+		}
+	}
 
 	replace()
 
