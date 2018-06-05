@@ -29,6 +29,8 @@ type header struct {
 }
 
 type txdFile struct {
+	file		*os.File
+	reader		*bufio.Reader
 	Header		header
 	Info		txdInfo
 	Textures	[]txdTexture
@@ -97,7 +99,10 @@ func (h *header) read(p *bufio.Reader) bool {
 
 func (h *txdFile) read(f *os.File) bool {
 	filePosition = 0
-	p := bufio.NewReader(f)
+	h.reader = bufio.NewReader(f)
+	h.file   = f
+	p       := bufio.NewReader(f)
+
 	h.Header.read(p)
 	if debug {
 		fmt.Println("------------------------------------------")
@@ -202,8 +207,7 @@ func (h *txdTextureData) read(f *os.File, p *bufio.Reader) bool  {
 	return true
 }
 
-
-/* TODO: 32bit & DXT3 */
+// Will be deprecated soon
 func (h *txdFile) replaceTexture(f *os.File, textureId uint16) error {
 	condition :=
 	 	h.Textures[textureId].Data.Width >= 32 &&
@@ -215,7 +219,7 @@ func (h *txdFile) replaceTexture(f *os.File, textureId uint16) error {
 		switch h.Textures[textureId].Data.TextureFormat {
 			case "DXT1":
 				{
-					path := "../src/dds/" +
+					path := "src/dds/" +
 						strconv.Itoa(int(h.Textures[textureId].Data.Width)) +
 						"x" +
 						strconv.Itoa(int(h.Textures[textureId].Data.Height)) +
@@ -230,6 +234,7 @@ func (h *txdFile) replaceTexture(f *os.File, textureId uint16) error {
 
 					bytesf = bytesf[0x80:]
 
+					fmt.Printf("%x\n", h.Textures[textureId].Data._DataStart)
 					_, err = f.WriteAt(bytesf, int64(h.Textures[textureId].Data._DataStart))
 					if err != nil {
 						return err
@@ -241,13 +246,4 @@ func (h *txdFile) replaceTexture(f *os.File, textureId uint16) error {
 	}
 
 	return nil
-}
-
-func (h *txdFile) replaceAll(f *os.File) error {
-	var i uint16
-	var err error
-	for i = 0; i < h.Info.Count; i++ {
-		err = h.replaceTexture(f, i)
-	}
-	return err
 }

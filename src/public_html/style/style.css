@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css?family=Sunflower:300');
+
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Sunflower', sans-serif;
+}
+
+body {
+    background: white;
+}
+
+.header {
+    height: 100px;
+    vertical-align: middle;
+}
+
+.content {
+    text-align: center;
+    position: absolute;
+    width: 1000px;
+    height: 500px;
+    top: calc(50% - 250px);
+    left: calc(50% - 500px);
+}
+
+hr {
+    margin-bottom: 5em;
+    border: none;
+    border-top: 1px solid #e3e3e3;
+}
+
+.mainform {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: 30%;
+    width: 400px;
+    height: 300px;
+}
+
+.mainform input {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .08);
+    border: 1px solid #e3e3e3;
+    border-radius: .5em;
+    width: calc(100% - 4em);
+    padding: 1em;
+    margin: 1em 1em 0 1em;
+    text-transform: uppercase;
+}
+
+.mainform input[type="submit"] {
+    color: white;
+    width: calc(100% - 2em);
+    border: 1px solid #cb2833;
+    background: linear-gradient(#ff7068, #dd2c37);
+}
+
+.mainform input[type="text"]:focus {
+    box-shadow: 0 5px 17px rgba(0, 0, 0, .07);
+    border-color: #ff7068;
+    border-radius: .5em;
+    width: calc(100% - 4em);
+    padding: 1em;
+    margin: 1em 1em 0 1em;
+    text-transform: uppercase;
+}
+
+.mainform input[type="submit"]:hover {
+    border-color: #dd4a54;
+    background: linear-gradient(#ff908e, #dd4a54);
+}
