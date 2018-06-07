@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/disintegration/imaging"
 	"log"
+	"github.com/InfinityTools/go-squish"
 )
 
 type cachedImages struct {
@@ -13,16 +14,6 @@ type cachedImages struct {
 }
 
 var cache cachedImages
-
-func convertToDXT1(image []uint8) (ret *[]uint8) {
-
-	return
-}
-
-func convertToDXT3(image []uint8) (ret *[]uint8) {
-
-	return
-}
 
 // write prepared image
 func (h *txdTexture) write(f *os.File, image []uint8) error  {
@@ -48,18 +39,17 @@ func (h *txdTexture) Replace(f *os.File, image image.Image) error {
 
 	case "DXT1":
 		{
-			return nil
 			textureSize := fmt.Sprintf("%dx%d", h.Data.Width, h.Data.Height)
 			if cache.DXT1[textureSize] != nil {
 				h.write(f, *cache.DXT1[textureSize])
 			} else {
 				if cache.RGB[textureSize] != nil {
-					cache.DXT1[textureSize] = convertToDXT1(*cache.RGB[textureSize])
+					*cache.DXT1[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
 					h.write(f, *cache.DXT1[textureSize])
 				} else {
 					resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
 					cache.RGB[textureSize] = &resizedImage.Pix
-					cache.DXT1[textureSize] = convertToDXT1(*cache.RGB[textureSize])
+					*cache.DXT1[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
 					h.write(f, *cache.DXT1[textureSize])
 				}
 			}
@@ -67,18 +57,17 @@ func (h *txdTexture) Replace(f *os.File, image image.Image) error {
 
 	case "DXT3":
 		{
-			return nil
 			textureSize := fmt.Sprintf("%dx%d", h.Data.Width, h.Data.Height)
 			if cache.DXT3[textureSize] != nil {
 				h.write(f, *cache.DXT3[textureSize])
 			} else {
 				if cache.RGB[textureSize] != nil {
-					cache.DXT3[textureSize] = convertToDXT3(*cache.RGB[textureSize])
+					*cache.DXT3[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT3 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
 					h.write(f, *cache.DXT3[textureSize])
 				} else {
 					resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
 					*cache.RGB[textureSize] = resizedImage.Pix
-					cache.DXT3[textureSize] = convertToDXT3(*cache.RGB[textureSize])
+					*cache.DXT3[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT3 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
 					h.write(f, *cache.DXT3[textureSize])
 				}
 			}
