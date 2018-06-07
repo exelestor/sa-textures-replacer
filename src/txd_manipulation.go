@@ -43,15 +43,17 @@ func (h *txdTexture) Replace(f *os.File, image image.Image) error {
 			if cache.DXT1[textureSize] != nil {
 				h.write(f, *cache.DXT1[textureSize])
 			} else {
-				if cache.RGB[textureSize] != nil {
-					*cache.DXT1[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
-					h.write(f, *cache.DXT1[textureSize])
-				} else {
+				//if cache.RGB[textureSize] != nil {
+				//	squished := squish.CompressImage(cache.RGB[textureSize], squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
+				//	cache.DXT1[textureSize] = &squished
+				//	h.write(f, *cache.DXT1[textureSize])
+				//} else {
 					resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
 					cache.RGB[textureSize] = &resizedImage.Pix
-					*cache.DXT1[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
+					squished := squish.CompressImage(resizedImage, squish.FLAGS_DXT1 | squish.FLAGS_RANGE_FIT, squish.METRIC_PERCEPTUAL)
+					cache.DXT1[textureSize] = &squished
 					h.write(f, *cache.DXT1[textureSize])
-				}
+				//}
 			}
 		}
 
@@ -61,15 +63,17 @@ func (h *txdTexture) Replace(f *os.File, image image.Image) error {
 			if cache.DXT3[textureSize] != nil {
 				h.write(f, *cache.DXT3[textureSize])
 			} else {
-				if cache.RGB[textureSize] != nil {
-					*cache.DXT3[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT3 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
-					h.write(f, *cache.DXT3[textureSize])
-				} else {
+				//if cache.RGB[textureSize] != nil {
+				//	squished := squish.CompressImage(image, squish.FLAGS_DXT3 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
+				//	cache.DXT3[textureSize] = &squished
+				//	h.write(f, *cache.DXT3[textureSize])
+				//} else {
 					resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
-					*cache.RGB[textureSize] = resizedImage.Pix
-					*cache.DXT3[textureSize] = squish.CompressImage(image, squish.FLAGS_DXT3 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
+					cache.RGB[textureSize] = &resizedImage.Pix
+					squished := squish.CompressImage(resizedImage, squish.FLAGS_DXT3 | squish.FLAGS_RANGE_FIT, squish.METRIC_PERCEPTUAL)
+					cache.DXT3[textureSize] = &squished
 					h.write(f, *cache.DXT3[textureSize])
-				}
+				//}
 			}
 		}
 
@@ -105,6 +109,8 @@ func RGBAtoBGRA(image []uint8) (ret []uint8) {
 
 func (h *txdFile) replaceAll(f *os.File, image image.Image) error {
 	cache.RGB = make(map[string]*[]uint8)
+	cache.DXT1 = make(map[string]*[]uint8)
+	cache.DXT3 = make(map[string]*[]uint8)
 	for _, i := range h.Textures {
 		i.Replace(f, image)
 	}

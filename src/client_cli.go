@@ -40,12 +40,12 @@ func replace(image image.Image) error {
 		txd.read(f)
 		//if !(*onlyRead) {
 
-		//	err = txd.replaceAll(f, image)
-		//	if err != nil {
-		//		fmt.Println("Some errors", err)
-		//	} else {
-		//		fmt.Println("Done")
-		//	}
+			err = txd.replaceAll(f, image)
+			if err != nil {
+				fmt.Println("Some errors", err)
+			} else {
+				fmt.Println("Done")
+			}
 
 		//} else {
 		//	fmt.Println("Done")
@@ -111,6 +111,6 @@ func not_main() {
 }
 
 func main()  {
-	debug = true
-	replacerAPIHandler([]byte(`{"name":"replaceAll","params":"https://sun9-6.userapi.com/c840623/v840623453/80a15/M8P3vc2zH3w.jpg"}`))
+	//debug = true
+	replacerAPIHandler([]byte(`{"name":"replaceAll","params":"https://pp.userapi.com/c635102/v635102682/2ab0c/DbtNEhqO4Bc.jpg"}`))
 }
