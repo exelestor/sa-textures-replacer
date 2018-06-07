@@ -6,8 +6,6 @@ import (
 	"bufio"
 	"os"
 	"fmt"
-	"strconv"
-	"io/ioutil"
 )
 
 func readUint32(data []byte) (ret uint32) {
@@ -205,45 +203,4 @@ func (h *txdTextureData) read(f *os.File, p *bufio.Reader) bool  {
 	}
 
 	return true
-}
-
-// Will be deprecated soon
-func (h *txdFile) replaceTexture(f *os.File, textureId uint16) error {
-	condition :=
-	 	h.Textures[textureId].Data.Width >= 32 &&
-		h.Textures[textureId].Data.Height >= 32 &&
-		h.Textures[textureId].Data.Width < 2048 &&
-		h.Textures[textureId].Data.Height < 2048
-
-	if condition {
-		switch h.Textures[textureId].Data.TextureFormat {
-			case "DXT1":
-				{
-					path := "src/dds/" +
-						strconv.Itoa(int(h.Textures[textureId].Data.Width)) +
-						"x" +
-						strconv.Itoa(int(h.Textures[textureId].Data.Height)) +
-						".dds"
-
-					o, err := os.Open(path)
-					if err != nil {
-						return err
-					}
-					bytesf, err := ioutil.ReadAll(o)
-					o.Close()
-
-					bytesf = bytesf[0x80:]
-
-					fmt.Printf("%x\n", h.Textures[textureId].Data._DataStart)
-					_, err = f.WriteAt(bytesf, int64(h.Textures[textureId].Data._DataStart))
-					if err != nil {
-						return err
-					}
-				}
-			default:
-				return nil
-		}
-	}
-
-	return nil
 }

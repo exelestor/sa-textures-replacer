@@ -25,9 +25,9 @@ func check(e error) {
 	}
 }
 
-func replace() error {
-	//files, err := filepath.Glob("F:\\txd\\*.txd")
-	files, err := filepath.Glob("bin/test.txd")
+func replace(image image.Image) error {
+	files, err := filepath.Glob("F:\\txd\\*.txd")
+	//files, err := filepath.Glob("../bin/*.txd")
 	check(err)
 	filesCount := len(files)
 	counter := 1
@@ -38,17 +38,18 @@ func replace() error {
 		check(err)
 		txd := new(txdFile)
 		txd.read(f)
+		//if !(*onlyRead) {
 
-		if !(*onlyRead) {
-			err := txd.replaceAll(f)
-			if err != nil {
-				fmt.Println("Some errors", err)
-			} else {
-				fmt.Println("Done")
-			}
-		} else {
-			fmt.Println("Done")
-		}
+		//	err = txd.replaceAll(f, image)
+		//	if err != nil {
+		//		fmt.Println("Some errors", err)
+		//	} else {
+		//		fmt.Println("Done")
+		//	}
+
+		//} else {
+		//	fmt.Println("Done")
+		//}
 		f.Close()
 		counter++
 	}
@@ -107,4 +108,9 @@ func not_main() {
 	//replace()
 
 	fmt.Println("All done!")
+}
+
+func main()  {
+	debug = true
+	replacerAPIHandler([]byte(`{"name":"replaceAll","params":"https://sun9-6.userapi.com/c840623/v840623453/80a15/M8P3vc2zH3w.jpg"}`))
 }

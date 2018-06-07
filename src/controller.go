@@ -24,9 +24,7 @@ func replacerAPIHandler(request []byte) {
 	}
 	switch command.Name {
 	case "replaceAll":
-		//replace()
 		log.Println("replacerAPIHandler: replaceAll")
-	case "downloadImage":
 		resp, err := http.Get(command.Params)
 		if err != nil {
 			log.Println(err)
@@ -40,6 +38,7 @@ func replacerAPIHandler(request []byte) {
 		fmt.Printf("Size:	%d\n", len(body))
 		fmt.Printf("Bounds:	%s\n", img.Bounds())
 		fmt.Printf("Type:	%s\n", typeImg)
+		replace(img)
 	default:
 		return
 	}

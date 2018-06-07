@@ -20,11 +20,11 @@ func replacerAPI(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
-func main() {
-	log.Println("Server started")
-	http.Handle("/", http.FileServer(http.Dir("./src/public_html")))
-	http.HandleFunc("/api/", replacerAPI)
-	if err := http.ListenAndServe(":8881", nil); err != nil {
-		panic(err)
-	}
-}
+//func main() {
+//	log.Println("Server started")
+//	http.Handle("/", http.FileServer(http.Dir("../src/public_html")))
+//	http.HandleFunc("/api/", replacerAPI)
+//	if err := http.ListenAndServe(":8881", nil); err != nil {
+//		panic(err)
+//	}
+//}
