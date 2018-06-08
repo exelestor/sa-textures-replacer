@@ -8,14 +8,18 @@ import (
 	"fmt"
 	"bytes"
 	"image"
+	"github.com/andlabs/ui"
+	"path/filepath"
+	"os"
 )
 
 type Message struct {
 	Name		string `json:"name"`
 	Params		string `json:"params"`
+	TXDPath		string `json:"txd_path"`
 }
 
-func replacerAPIHandler(request []byte) {
+func replacerAPIHandler(request []byte, bar *ui.ProgressBar) {
 	var command Message
 	err := json.Unmarshal(request, &command)
 	if err != nil {
@@ -38,8 +42,41 @@ func replacerAPIHandler(request []byte) {
 		fmt.Printf("Size:	%d\n", len(body))
 		fmt.Printf("Bounds:	%s\n", img.Bounds())
 		fmt.Printf("Type:	%s\n", typeImg)
-		replace(img)
+		fmt.Printf("%v\n", bar)
+		replace(img, command.TXDPath, bar)
 	default:
 		return
 	}
+}
+
+func replace(image image.Image, txdPath string, bar *ui.ProgressBar) error {
+	go cache.make(&image)
+	files, err := filepath.Glob(txdPath + "\\*.txd")
+	fmt.Println(txdPath)
+	check(err)
+	filesCount := len(files)
+	counter := 1
+
+	for _, fa := range files {
+		//fmt.Printf("[%d/%d] Working with '%s'... ", counter, filesCount, fa)
+		ui.QueueMain(func() {
+			bar.SetValue(int(float64(counter) / float64(filesCount) * 100))
+		})
+		f, err := os.OpenFile(fa, os.O_RDWR, 0755)
+		check(err)
+		txd := new(txdFile)
+		txd.read(f)
+
+		err = txd.replaceAll(f, image)
+		//if err != nil {
+		//	fmt.Println("Some errors", err)
+		//} else {
+		//	fmt.Println("Done")
+		//}
+
+		f.Close()
+		counter++
+	}
+
+	return nil
 }

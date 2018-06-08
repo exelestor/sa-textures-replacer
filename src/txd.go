@@ -102,20 +102,12 @@ func (h *txdFile) read(f *os.File) bool {
 	p       := bufio.NewReader(f)
 
 	h.Header.read(p)
-	if debug {
-		fmt.Println("------------------------------------------")
-	}
 	h.Info.read(p)
-	if debug {
-		fmt.Println("------------------------------------------")
-	}
+
 	for i := 0; uint16(i) < h.Info.Count; i++ {
 		temp := txdTexture{}
 		temp.read(f, p)
 		h.Textures = append(h.Textures, temp)
-		if debug {
-			fmt.Println("------------------------------------------")
-		}
 	}
 
 	if debug {
@@ -136,11 +128,6 @@ func (h *txdInfo) read(p *bufio.Reader) bool  {
 
 	h.Count = readUint16(buf[:2])
 	h.Unknown = readUint16(buf[2:])
-
-	if debug {
-		fmt.Printf("	Textures count: %d\n", h.Count)
-		fmt.Printf("	Unknown: %d\n", h.Unknown)
-	}
 
 	return true
 }
