@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"github.com/disintegration/imaging"
 	"github.com/InfinityTools/go-squish"
+	"sync"
 )
 
 type cachedImages struct {
+	RGBi				map[string]*image.NRGBA
 	RGB, DXT1, DXT3		map[string]*[]uint8
 }
 
@@ -28,19 +30,13 @@ func (h *txdTexture) Replace(f *os.File, image image.Image) error {
 			textureSize := fmt.Sprintf("%dx%d", h.Data.Width, h.Data.Height)
 			if cache.DXT1[textureSize] != nil {
 				h.write(f, *cache.DXT1[textureSize])
-				//fmt.Printf("DXT1: used cache %s\n", textureSize)
+				//fmt.Println(textureSize, "used cache")
 			} else {
-				//if cache.RGB[textureSize] != nil {
-				//	squished := squish.CompressImage(cache.RGB[textureSize], squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
-				//	cache.DXT1[textureSize] = &squished
-				//	h.write(f, *cache.DXT1[textureSize])
-				//} else {
-					resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
-					cache.RGB[textureSize] = &resizedImage.Pix
-					squished := squish.CompressImage(resizedImage, squish.FLAGS_DXT1 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
-					cache.DXT1[textureSize] = &squished
-					h.write(f, *cache.DXT1[textureSize])
-				//}
+				resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
+				cache.RGB[textureSize] = &resizedImage.Pix
+				squished := squish.CompressImage(resizedImage, squish.FLAGS_DXT1 | squish.FLAGS_RANGE_FIT, squish.METRIC_PERCEPTUAL)
+				cache.DXT1[textureSize] = &squished
+				h.write(f, *cache.DXT1[textureSize])
 			}
 		}
 
@@ -52,7 +48,7 @@ func (h *txdTexture) Replace(f *os.File, image image.Image) error {
 			} else {
 				resizedImage := imaging.Resize(image, int(h.Data.Width), int(h.Data.Height), imaging.Lanczos)
 				cache.RGB[textureSize] = &resizedImage.Pix
-				squished := squish.CompressImage(resizedImage, squish.FLAGS_DXT3 | squish.FLAGS_ITERATIVE_CLUSTER_FIT, squish.METRIC_PERCEPTUAL)
+				squished := squish.CompressImage(resizedImage, squish.FLAGS_DXT3 | squish.FLAGS_RANGE_FIT, squish.METRIC_PERCEPTUAL)
 				cache.DXT3[textureSize] = &squished
 				h.write(f, *cache.DXT3[textureSize])
 			}
@@ -90,6 +86,7 @@ func RGBAtoBGRA(source []uint8) (dest []uint8) {
 }
 
 func (c *cachedImages) make(img *image.Image) {
+	cache.RGBi = make(map[string]*image.NRGBA)
 	cache.RGB = make(map[string]*[]uint8)
 	cache.DXT1 = make(map[string]*[]uint8)
 	cache.DXT3 = make(map[string]*[]uint8)
@@ -99,13 +96,38 @@ func (c *cachedImages) make(img *image.Image) {
 			textureSize := fmt.Sprintf("%dx%d", i, j)
 			resizedImage := imaging.Resize(*img, i, j, imaging.Lanczos)
 			resizedImageBGR := RGBAtoBGRA(resizedImage.Pix)
+
+			cache.RGBi[textureSize] = resizedImage
 			cache.RGB[textureSize] = &resizedImageBGR
-			squishedDXT1 := squish.CompressImage(resizedImage, squish.FLAGS_DXT1 | squish.FLAGS_RANGE_FIT, squish.METRIC_PERCEPTUAL)
-			cache.DXT1[textureSize] = &squishedDXT1
-			squishedDXT3 := squish.CompressImage(resizedImage, squish.FLAGS_DXT3 | squish.FLAGS_RANGE_FIT, squish.METRIC_PERCEPTUAL)
-			cache.DXT3[textureSize] = &squishedDXT3
 		}
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := 4; i <= 2048; i *= 2 {
+			for j := 4; j <= 2048; j *= 2 {
+				textureSize := fmt.Sprintf("%dx%d", i, j)
+				fmt.Println(textureSize, "DXT1")
+				squishedDXT1 := squish.CompressImage(cache.RGBi[textureSize], squish.FLAGS_DXT1 | squish.FLAGS_RANGE_FIT | squish.FLAGS_SOURCE_BGRA, squish.METRIC_PERCEPTUAL)
+				cache.DXT1[textureSize] = &squishedDXT1
+			}
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for i := 4; i <= 2048; i *= 2 {
+			for j := 4; j <= 2048; j *= 2 {
+				textureSize := fmt.Sprintf("%dx%d", i, j)
+				fmt.Println(textureSize, "DXT3")
+				squishedDXT1 := squish.CompressImage(cache.RGBi[textureSize], squish.FLAGS_DXT3 | squish.FLAGS_RANGE_FIT | squish.FLAGS_SOURCE_BGRA, squish.METRIC_PERCEPTUAL)
+				cache.DXT3[textureSize] = &squishedDXT1
+			}
+		}
+	}()
+	wg.Wait()
+
 	fmt.Println("Cache created")
 	return
 }
