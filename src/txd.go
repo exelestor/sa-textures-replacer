@@ -63,9 +63,10 @@ type txdTextureData struct {
 	Flags			uint8
 	Palette			uint8
 	DataSize		uint32
+
+	_MipmapsStart	[]uint32
 	_DataStart		uint32
 	_DataEnd		uint32
-	/* Texture has to be stored here */
 }
 
 type txdExtraInfo struct {
@@ -79,14 +80,12 @@ func (h *header) read(p *bufio.Reader) bool {
 		if numBytesRead != 12 {
 			return false
 		}
-		check(err)
+		messageError(err)
 		filePosition += uint32(numBytesRead)
 
 		h.sectionType = readUint32(buf[:4])
 		h.chunkSize = readUint32(buf[4:8])
 		h.build = readUint32(buf[8:])
-
-		//fmt.Printf("Header red! %+v\n", h)
 
 		if h.sectionType != 3 {
 			break
@@ -123,7 +122,7 @@ func (h *txdInfo) read(p *bufio.Reader) bool  {
 	if uint32(numBytesRead) != h.Header.chunkSize {
 		return false
 	}
-	check(err)
+	messageError(err)
 	filePosition += uint32(numBytesRead)
 
 	h.Count = readUint16(buf[:2])
@@ -145,7 +144,7 @@ func (h *txdTextureData) read(f *os.File, p *bufio.Reader) bool  {
 	if uint32(numBytesRead) != 92 {
 		return false
 	}
-	check(err)
+	messageError(err)
 
 	h.Version		= readUint32(buf[:4])
 	h.FilterFlags	= readUint32(buf[4:8])
@@ -164,11 +163,28 @@ func (h *txdTextureData) read(f *os.File, p *bufio.Reader) bool  {
 
 	h._DataStart	= filePosition + 92
 	h._DataEnd		= filePosition + h.DataSize + 92
+
+	addition := uint32(h.Height) * uint32(h.Width) / 8
+
+	if h.MipmapCount > 1 {
+		position := uint32(4)
+		h._MipmapsStart = append(h._MipmapsStart, h._DataEnd + 4)
+		temp := 92 + h.DataSize + 4
+		for i := h.MipmapCount - 3; i > 0; i-- {
+			position += addition + 4
+
+			if temp < h.Header.chunkSize {
+				h._MipmapsStart = append(h._MipmapsStart, h._DataEnd + position)
+			}
+			addition /= 4
+		}
+	}
+
 	filePosition	+= uint32(h.Header.chunkSize)
 
 	p.Reset(f)
 	_, err = f.Seek(int64(filePosition), 0)
-	check(err)
+	messageError(err)
 
 	if debug {
 		fmt.Printf("	Version:		%d\n", h.Version)

@@ -22,13 +22,13 @@ var running bool
 
 func replacerAPIHandler(request []byte) {
 	if running {
-		check(fmt.Errorf("Program is running already"))
+		messageError(fmt.Errorf("Program is running already"))
 	} else {
 		running = true
 		var command Message
 		err := json.Unmarshal(request, &command)
 		if err != nil {
-			check(err)
+			messageError(err)
 			return
 		}
 		switch command.Name {
@@ -36,18 +36,18 @@ func replacerAPIHandler(request []byte) {
 			log.Println("replacerAPIHandler: replaceAll")
 			resp, err := http.Get(command.Params)
 			if err != nil {
-				check(err)
+				messageError(err)
 				return
 			}
 			defer resp.Body.Close()
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				check(err)
+				messageError(err)
 				return
 			}
 			img, _, err := image.Decode(bytes.NewReader(body))
 			if err != nil {
-				check(err)
+				messageError(err)
 				return
 			}
 			replace(img, command.TXDPath)
@@ -64,31 +64,27 @@ document.getElementById('processLabel').style.display = 'block';
 document.getElementById('processLabel').innerHTML = 'Processing...';
 `)},
 	)
-	go cache.make(&image)
+	cache.make(&image)
 	files, err := filepath.Glob(txdPath + "\\*.txd")
 	fmt.Println(txdPath)
 	if err != nil {
-		check(err)
+		messageError(err)
 		return err
 	}
 	if len(files) == 0 {
-		check(fmt.Errorf("No TXD files in this folder"))
+		messageError(fmt.Errorf("No TXD files in this folder"))
 		return nil
 	}
 	filesCount := len(files)
 	counter := 1
 
 	for _, fa := range files {
-		//fmt.Println(fa)
-		w.Dispatch(func() {
-			w.Eval(
-				fmt.Sprintf("document.getElementById('myBar').style.width = %d + '%%';", int(float64(counter)/float64(filesCount) * 100)),
-			)},
-		)
+		fmt.Println(fa)
+		progressBarSetValue(int(float64(counter)/float64(filesCount) * 100))
 
 		f, err := os.OpenFile(fa, os.O_RDWR, 0755)
 		if err != nil {
-			check(err)
+			messageError(err)
 			return err
 		}
 		txd := new(txdFile)
@@ -96,14 +92,11 @@ document.getElementById('processLabel').innerHTML = 'Processing...';
 
 		err = txd.replaceAll(f, image)
 
-
 		f.Close()
 		counter++
 	}
 
-	w.Dispatch(func() {
-		w.Eval("document.getElementById('processLabel').innerHTML = 'Done'")},
-	)
+	message("Done")
 	running = false
 	return nil
 }
