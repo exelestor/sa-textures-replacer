@@ -1,5 +1,7 @@
 # SA Textures Replacer
 
+This is a tool for replacing all textures in GTA San Andreas (in any RW-based GTA, but other ones was not tested) with a single one. Written in Go.
+
 ![Pizdec](https://pp.userapi.com/c846521/v846521710/76442/Y0gnJH_dsAM.jpg)
 
 Usage
