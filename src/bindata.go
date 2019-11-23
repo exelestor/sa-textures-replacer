@@ -203,9 +203,9 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"../bin/data/index.html": BinDataIndexHtml,
-	"../bin/data/script.js": BinDataScriptJs,
-	"../bin/data/style.css": BinDataStyleCss,
+	"../bin/data/index.html":            BinDataIndexHtml,
+	"../bin/data/script.js":             BinDataScriptJs,
+	"../bin/data/style.css":             BinDataStyleCss,
 	"../bin/data/untitled_i4L_icon.ico": BinDataUntitled_i4l_iconIco,
 }
 
@@ -248,13 +248,14 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"..": &bintree{nil, map[string]*bintree{
 		"bin": &bintree{nil, map[string]*bintree{
 			"data": &bintree{nil, map[string]*bintree{
-				"index.html": &bintree{BinDataIndexHtml, map[string]*bintree{}},
-				"script.js": &bintree{BinDataScriptJs, map[string]*bintree{}},
-				"style.css": &bintree{BinDataStyleCss, map[string]*bintree{}},
+				"index.html":            &bintree{BinDataIndexHtml, map[string]*bintree{}},
+				"script.js":             &bintree{BinDataScriptJs, map[string]*bintree{}},
+				"style.css":             &bintree{BinDataStyleCss, map[string]*bintree{}},
 				"untitled_i4L_icon.ico": &bintree{BinDataUntitled_i4l_iconIco, map[string]*bintree{}},
 			}},
 		}},
@@ -307,4 +308,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

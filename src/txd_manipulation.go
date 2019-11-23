@@ -1,30 +1,30 @@
 package main
 
 import (
-	"os"
-	"image"
 	"fmt"
-	"github.com/disintegration/imaging"
 	"github.com/InfinityTools/go-squish"
+	"github.com/disintegration/imaging"
+	"image"
+	"os"
 	"sync"
 )
 
 type cacheField map[string]*[]uint8
 
 type cachedImages struct {
-	RGBi				map[string]*image.NRGBA
-	RGB, DXT1, DXT3		cacheField
+	RGBi            map[string]*image.NRGBA
+	RGB, DXT1, DXT3 cacheField
 }
 
 var cache cachedImages
 
 // write prepared image
-func (h *txdTexture) write(f *os.File, image []uint8) error  {
+func (h *txdTexture) write(f *os.File, image []uint8) error {
 	_, err := f.WriteAt(image, int64(h.Data._DataStart))
 	return err
 }
 
-func (h *txdTexture) writeAt(f *os.File, image []uint8, addr int64) error  {
+func (h *txdTexture) writeAt(f *os.File, image []uint8, addr int64) error {
 	_, err := f.WriteAt(image, addr)
 	return err
 }
@@ -84,11 +84,11 @@ func (h *txdTexture) Replace(f *os.File, image *image.Image) error {
 func RGBAtoBGRA(source []uint8) (dest []uint8) {
 	length := len(source)
 	dest = make([]uint8, length)
-	for i := 0; i <= length - 4; i += 4 {
-		dest[i]		= source[i + 2]
-		dest[i + 1]	= source[i + 1]
-		dest[i + 2]	= source[i]
-		dest[i + 3]	= source[i + 3]
+	for i := 0; i <= length-4; i += 4 {
+		dest[i] = source[i+2]
+		dest[i+1] = source[i+1]
+		dest[i+2] = source[i]
+		dest[i+3] = source[i+3]
 	}
 	return
 }
@@ -147,7 +147,7 @@ func (c *cachedImages) make(img *image.Image) {
 					go func(x int, y int) {
 						defer wgLoop1.Done()
 						textureSize := fmt.Sprintf("%dx%d", x, y)
-						squishedDXT1 := squish.CompressImage(cache.RGBi[textureSize], squish.FLAGS_DXT1 | squish.FLAGS_RANGE_FIT | squish.FLAGS_SOURCE_BGRA, squish.METRIC_PERCEPTUAL)
+						squishedDXT1 := squish.CompressImage(cache.RGBi[textureSize], squish.FLAGS_DXT1|squish.FLAGS_RANGE_FIT|squish.FLAGS_SOURCE_BGRA, squish.METRIC_PERCEPTUAL)
 						mutex.Lock()
 						cache.DXT1[textureSize] = &squishedDXT1
 						mutex.Unlock()
@@ -176,7 +176,7 @@ func (c *cachedImages) make(img *image.Image) {
 					go func(x int, y int) {
 						defer wgLoop1.Done()
 						textureSize := fmt.Sprintf("%dx%d", x, y)
-						squishedDXT3 := squish.CompressImage(cache.RGBi[textureSize], squish.FLAGS_DXT3 | squish.FLAGS_RANGE_FIT | squish.FLAGS_SOURCE_BGRA, squish.METRIC_PERCEPTUAL)
+						squishedDXT3 := squish.CompressImage(cache.RGBi[textureSize], squish.FLAGS_DXT3|squish.FLAGS_RANGE_FIT|squish.FLAGS_SOURCE_BGRA, squish.METRIC_PERCEPTUAL)
 						mutex.Lock()
 						cache.DXT3[textureSize] = &squishedDXT3
 						mutex.Unlock()

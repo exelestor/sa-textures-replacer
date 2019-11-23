@@ -1,21 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"image"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"io/ioutil"
-	"fmt"
-	"bytes"
-	"image"
-	"path/filepath"
 	"os"
+	"path/filepath"
 )
 
 type Message struct {
-	Name		string `json:"name"`
-	Params		string `json:"params"`
-	TXDPath		string `json:"txd_path"`
+	Name    string `json:"name"`
+	Params  string `json:"params"`
+	TXDPath string `json:"txd_path"`
 }
 
 var running bool
@@ -62,7 +62,8 @@ func replace(image image.Image, txdPath string) error {
 		w.Eval(`
 document.getElementById('processLabel').style.display = 'block';
 document.getElementById('processLabel').innerHTML = 'Processing...';
-`)},
+`)
+	},
 	)
 	cache.make(&image)
 	files, err := filepath.Glob(txdPath + "\\*.txd")
@@ -80,7 +81,7 @@ document.getElementById('processLabel').innerHTML = 'Processing...';
 
 	for _, fa := range files {
 		fmt.Println(fa)
-		progressBarSetValue(int(float64(counter)/float64(filesCount) * 100))
+		progressBarSetValue(int(float64(counter) / float64(filesCount) * 100))
 
 		f, err := os.OpenFile(fa, os.O_RDWR, 0755)
 		if err != nil {

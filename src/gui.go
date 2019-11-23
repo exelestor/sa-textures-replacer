@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/zserge/webview"
 	"fmt"
+	"github.com/zserge/webview"
 	"log"
 	"strings"
 )
 
 type Controller struct {
-	TXDDir		string `json:"txdDir"`
-	Progress	string `json:"progress"`
+	TXDDir   string `json:"txdDir"`
+	Progress string `json:"progress"`
 }
 
 func messageError(e error) {
@@ -19,9 +19,9 @@ func messageError(e error) {
 			func() {
 				w.Eval(
 					fmt.Sprintf(
-					`document.getElementById('processLabel').innerHTML = '<span class="pink">Error:</span> %s'`,
-					e.Error(),
-				))
+						`document.getElementById('processLabel').innerHTML = '<span class="pink">Error:</span> %s'`,
+						e.Error(),
+					))
 				w.Eval(`document.getElementById('processLabel').style.display = 'block';`)
 			},
 		)
@@ -34,7 +34,7 @@ func message(s string) {
 		func() {
 			w.Eval(
 				fmt.Sprintf(
-				`document.getElementById('processLabel').innerHTML = '%s'`, s,
+					`document.getElementById('processLabel').innerHTML = '%s'`, s,
 				),
 			)
 			w.Eval(`document.getElementById('processLabel').style.display = 'block';`)
@@ -42,7 +42,7 @@ func message(s string) {
 	)
 }
 
-func progressBarSetValue(p int)  {
+func progressBarSetValue(p int) {
 	w.Dispatch(
 		func() {
 			w.Eval(
